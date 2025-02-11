@@ -150,7 +150,7 @@ vagrant destroy -f suse
 
 ---
 
-## ATELIER-02
+## ATELIER-03
 
 ### Exercice : Configuration du Control Host et connexion aux Target Hosts
 
