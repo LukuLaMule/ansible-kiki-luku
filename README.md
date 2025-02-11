@@ -1,5 +1,11 @@
 # Formation Ansible - Exercices par Atelier
 
+## Sommaire
+- [Ansible par la pratique (3) – Installation](#atelier-01)
+- [Ansible par la pratique (4) – Authentification](#atelier-03)
+- [Ansible par la pratique (6) – Configuration de base](#atelier-06)
+
+
 ## ATELIER-01
 
 ### Exercice 1: Installation d'Ansible depuis les dépôts officiels
