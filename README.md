@@ -4,6 +4,7 @@
 - [Ansible par la pratique (3) – Installation](#atelier-01)
 - [Ansible par la pratique (4) – Authentification](#atelier-03)
 - [Ansible par la pratique (6) – Configuration de base](#atelier-06)
+- [Ansible par la pratique (8) – Idempotence](#atelier-06)
 
 
 ## ATELIER-01
@@ -389,5 +390,85 @@ exit
 ```
 
 ## 19. Supprimer toutes les VM de l’atelier
+```bash
+vagrant destroy -f
+```
+
+## ATELIER-07 : Idempotence avec Ansible
+
+## 1. Accéder au répertoire de l'atelier 07
+```bash
+cd ~/formation-ansible/atelier-07
+```
+
+## 2. Démarrer les machines virtuelles
+```bash
+vagrant up
+```
+
+## 3. Se connecter au Control Host
+```bash
+vagrant ssh ansible
+```
+
+## 4. Se placer dans le répertoire du projet Ansible
+```bash
+cd ansible/projets/ema/
+ls
+```
+On voit bien que les fichiers ansible.cfg et inventory sont présents : 
+![alt text](image-4.png)
+
+## 5. Installation des paquets tree, git et nmap sur toutes les cibles
+### Première et deuxeieme exécution
+```bash
+ansible all -m package -a "name=tree state=present"
+ansible all -m package -a "name=git state=present"
+ansible all -m package -a "name=nmap state=present"
+```
+### Deuxième exécution
+![alt text](image-5.png)
+![alt text](image-6.png)
+![alt text](image-7.png)
+
+## 6. Désinstallation des paquets
+### Première et deuxieme exécution
+```bash
+ansible all -m package -a "name=tree state=absent"
+ansible all -m package -a "name=git state=absent"
+ansible all -m package -a "name=nmap state=absent"
+```
+![alt text](image-8.png)
+
+## 7. Copier le fichier `/etc/fstab` du Control Host vers les Target Hosts
+### Première exécution
+```bash
+ansible all -m copy -a "src=/etc/fstab dest=/tmp/test3.txt mode=0644"
+```
+![alt text](image-9.png)
+
+
+## 8. Supprimer le fichier `/tmp/test3.txt` sur les Target Hosts
+### Première et duexieme exécution
+```bash
+ansible all -m file -a "path=/tmp/test3.txt state=absent"
+```
+![alt text](image-10.png)
+
+## 9. Vérifier l'espace utilisé sur la partition principale des Target Hosts
+```bash
+ansible all -m command -a "df -h /"
+```
+
+![alt text](image-11.png)
+
+Ici on remarque que chaque exécution retourne exactement le même résultat pour chaque Target Host. Cela confirme que la commande n’altère pas l’état du système (elle est purement informative)
+
+## 10. Quitter le Control Host
+```bash
+exit
+```
+
+## 11. Supprimer toutes les VM de l’atelier
 ```bash
 vagrant destroy -f
