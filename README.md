@@ -640,27 +640,28 @@ suse | SUCCESS => {
     "ping": "pong"
 }
 ```
+![alt text](image-12.png)
 
 11. **Exécuter le playbook `apache-debian.yml`**
 
 ```bash
 ansible-playbook apache-debian.yml
 ```
-![apache-debian](apache-debian.png)
+![alt text](image-13.png)
 
 12. **Exécuter le playbook `apache-rocky.yml`**
 
 ```bash
 ansible-playbook apache-rocky.yml
 ```
-![apache-rocky](apache-rocky.png)
+![alt text](image-14.png)
 
 13. **Exécuter le playbook `apache-suse.yml`**
 
 ```bash
 ansible-playbook apache-suse.yml
 ```
-![apache-suse](apache-suse.png)
+![alt text](image-15.png)
 
 14. **Vérifier les résultats**
 ```
@@ -669,4 +670,4 @@ curl rocky
 curl suse
 ```
 
-![curls](curls.png)
+![alt text](image-16.png)
