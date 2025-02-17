@@ -5,7 +5,7 @@
 - [Ansible par la pratique (4) – Authentification](#atelier-03)
 - [Ansible par la pratique (6) – Configuration de base](#atelier-06)
 - [Ansible par la pratique (8) – Idempotence](#atelier-07)
-- [Ansible par la pratique (10)– Un serveur web simple](#atelier-10)
+- [Ansible par la pratique (10) – Un serveur web simple](#atelier-10)
 
 
 ## ATELIER-01
@@ -397,6 +397,8 @@ vagrant destroy -f
 
 ## ATELIER-07 : Idempotence avec Ansible
 
+### Exercice : Idempotence avec Ansible
+
 ## 1. Accéder au répertoire de l'atelier 07
 ```bash
 cd ~/formation-ansible/atelier-07
@@ -475,7 +477,8 @@ exit
 vagrant destroy -f
 ```
 
-# Atelier 10: Un serveur web simple
+## ATELIER-10
+### Exercice : Un serveur web simple
 
 ## Exercice 1 : 
 
