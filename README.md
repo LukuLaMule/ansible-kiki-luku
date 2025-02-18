@@ -8,6 +8,7 @@
 - [Ansible par la pratique (10) – Un serveur web simple](#atelier-10)
 - [Ansible par la pratique (12) – Handler](#atelier-12)
 - [Ansible par la pratique (14) – Variable](#atelier-14)
+- [Ansible par la pratique (15) – Variables enregistrées](#atelier-15)
 
 
 ## ATELIER-01
@@ -1030,3 +1031,95 @@ Si on ne rentre aucunes valeurs :
 exit
 vagrant destroy -f
 ```
+
+## ATELIER-15
+### Exercice : Variables enregistrées
+
+1. **Démarrer les VMs**  
+```bash
+cd ~/formation-ansible/atelier-15
+vagrant up
+```
+
+2. **Connexion au Control Host**
+```bash
+vagrant ssh ansible
+```
+
+3. **Se rendre dans le repertoire du projet**
+```bash
+cd ansible/projets/ema/
+```
+## 2. Playbook `kernel.yml`
+
+Le playbook doit afficher les informations détaillées du noyau de tous les hôtes cibles en utilisant la commande `uname -a`.
+
+```yaml
+--- # kernel.yml
+- hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Afficher les informations du noyau
+      command: uname -a
+      changed_when: false
+      register: kernel_info
+
+    - name: Afficher les informations avec le paramètre msg
+      debug:
+        msg: "Noyau : {{ kernel_info.stdout }}"
+
+    - name: Afficher les informations avec le paramètre var
+      debug:
+        var: kernel_info.stdout_lines
+```
+1. **Vérifier la syntaxe du fichier `kernel.yml`**
+```bash
+yamllint kernel.yml
+```
+### Exécution :
+```bash
+ansible-playbook kernel.yml
+```
+
+
+![alt text](image-30.png)
+
+
+## 3. Playbook `packages.yml`
+
+Le playbook doit afficher le nombre total de paquets RPM installés sur les hôtes `rocky` et `suse`.
+
+```yaml
+--- # packages.yml
+- hosts: rocky,suse
+  gather_facts: false
+
+  tasks:
+    - name: Compter le nombre total de paquets RPM installés
+      shell: rpm -qa | wc -l
+      changed_when: false
+      register: rpm_count
+
+    - name: Afficher le nombre total de paquets
+      debug:
+        msg: "Nombre total de paquets RPM : {{ rpm_count.stdout | trim }}"
+```
+1. **Vérifier la syntaxe du fichier `kernel.yml`**
+```bash
+yamllint kernel.yml
+```
+### Exécution :
+```bash
+ansible-playbook packages.yml
+```
+![alt text](image-31.png)
+
+## 4. Quitter le Control Host
+```bash
+exit
+```
+
+## 5. Supprimer toutes les machines virtuelles
+```bash
+vagrant destroy -f
