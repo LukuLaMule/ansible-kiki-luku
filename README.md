@@ -7,8 +7,9 @@
 - [Ansible par la pratique (8) – Idempotence](#atelier-07)
 - [Ansible par la pratique (10) – Un serveur web simple](#atelier-10)
 - [Ansible par la pratique (12) – Handler](#atelier-12)
-- [Ansible par la pratique (14) – Variable](#atelier-14)
-- [Ansible par la pratique (15) – Variables enregistrées](#atelier-15)
+- [Ansible par la pratique (12) – Variable](#atelier-14)
+- [Ansible par la pratique (13) – Variables enregistrées](#atelier-15)
+- [Ansible par la pratique (14) – Facts et variables implicites](#atelier-16)
 
 
 ## ATELIER-01
@@ -1050,7 +1051,7 @@ vagrant ssh ansible
 ```bash
 cd ansible/projets/ema/
 ```
-## 2. Playbook `kernel.yml`
+### 2. Playbook `kernel.yml`
 
 Le playbook doit afficher les informations détaillées du noyau de tous les hôtes cibles en utilisant la commande `uname -a`.
 
@@ -1086,7 +1087,7 @@ ansible-playbook kernel.yml
 ![alt text](image-30.png)
 
 
-## 3. Playbook `packages.yml`
+### 3. Playbook `packages.yml`
 
 Le playbook doit afficher le nombre total de paquets RPM installés sur les hôtes `rocky` et `suse`.
 
@@ -1123,3 +1124,22 @@ exit
 ## 5. Supprimer toutes les machines virtuelles
 ```bash
 vagrant destroy -f
+```
+
+## ATELIER-16
+### Exercice : Facts et variables implicites
+1. **Démarrer les VMs**  
+```bash
+cd ~/formation-ansible/atelier-16
+vagrant up
+```
+
+2. **Connexion au Control Host**
+```bash
+vagrant ssh ansible
+```
+
+3. **Se rendre dans le repertoire du projet**
+```bash
+cd ansible/projets/ema/
+```
