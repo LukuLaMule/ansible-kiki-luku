@@ -10,6 +10,7 @@
 - [Ansible par la pratique (12) – Variable](#atelier-14)
 - [Ansible par la pratique (13) – Variables enregistrées](#atelier-15)
 - [Ansible par la pratique (14) – Facts et variables implicites](#atelier-16)
+- [Ansible par la pratique (15) – Cibles hétérogènes](#atelier-17)
 
 
 ## ATELIER-01
@@ -1143,3 +1144,250 @@ vagrant ssh ansible
 ```bash
 cd ansible/projets/ema/
 ```
+
+4. **Création d'un playbook**
+```bash
+nano pkg-info.yml
+```
+```yml
+---
+- hosts: all
+  tasks:
+    - name: Afficher le gestionnaire de paquets utilisé
+      debug:
+        msg: "Le host {{ inventory_hostname }} utilise le gestionnaire de paquets: {{ ansible_pkg_mgr }}"
+```
+
+5. **Exécuter le playbook**
+```bash
+ansible-playbook pkg-info.yml
+```
+![alt text](image-32.png)
+
+6. **Création d'un playbook**
+```bash
+nano python-info.yml
+```
+```yml
+---
+- hosts: all
+  tasks:
+    - name: Afficher la version de Python installée
+      debug:
+        msg: "Host {{ inventory_hostname }} utilise Python version: {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}.{{ ansible_python.version.micro }}"
+```
+
+7. **Vérifier la syntaxe du fichier `python-info.yml`**
+```bash
+yamllint python-info.yml
+
+python-info.yml
+  6:81      error    line too long (173 > 80 characters)  (line-length)
+```
+Ce n'est pas très grave
+
+8. **Exécuter le playbook**
+```bash
+ansible-playbook python-info.yml
+```
+![alt text](image-33.png)
+
+9. **Création d'un playbook**
+```bash
+nano dns-info.yml
+```
+```yml
+---
+- hosts: all
+  tasks:
+    - name: Afficher les serveurs DNS configurés
+      debug:
+        msg: "Host {{ inventory_hostname }} utilise les serveurs DNS: {{ ansible_dns.nameservers }}"
+```
+
+
+10. **Exécuter le playbook**
+```bash
+ansible-playbook dns-info.yml
+```
+![alt text](image-34.png)
+
+12. **Quitter et supprimer**
+```bash
+exit
+vagrant destroy -f
+```
+
+## ATELIER-17 
+### Exercice : Gestion des Cibles Hétérogènes
+
+### 1. Configuration de l'environnement
+
+- On se place dans le répertoire de l'atelier :
+  ```bash
+  cd ~/formation-ansible/atelier-17
+  ```
+
+- On démarre les Vms :
+  ```bash
+  vagrant up
+  ```
+
+- On se connecte au control host :
+  ```bash
+  vagrant ssh ansible
+  ```
+
+- On se place dans le répertoire des playbooks:
+  ```bash
+  cd ansible/projets/ema/playbooks/
+  ```
+
+### Playbook `chrony-01.yml`
+
+Le playbook `chrony-01.yml` doit configurer Chrony sur toutes les cibles en utilisant la méthode "gros sabots" avec les gestionnaires de paquets spécifiques à chaque distribution.
+
+### On créer chrony.yml 
+
+```bash
+nano chrony.yml
+```
+
+```yaml
+- name: Installation et configuration de Chrony
+  hosts: all
+  gather_facts: true  # Assure la collecte des facts Ansible
+
+  tasks:
+    - name: Définir le chemin de configuration selon l'OS
+      set_fact:
+        chrony_conf_dir: >-
+          {{ '/etc/chrony' if ansible_os_family in ['Debian', 'RedHat'] else '/etc/chrony.d' }}
+
+    - name: Installer Chrony sur Debian/Ubuntu
+      apt:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Installer Chrony sur Rocky (RHEL)
+      dnf:
+        name: chrony
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Installer Chrony sur SUSE
+      zypper:
+        name: chrony
+        state: present
+      when: ansible_os_family == "Suse"
+
+    - name: Assurer l'existence du dossier Chrony
+      file:
+        path: "{{ chrony_conf_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Vérifier l'existence du fichier chrony.conf
+      stat:
+        path: "/home/vagrant/ansible/projets/ema/playbooks/files/chrony.conf"
+      register: chrony_conf_file
+
+    - name: Copier la configuration Chrony
+      copy:
+        src: "/home/vagrant/ansible/projets/ema/playbooks/files/chrony.conf"
+        dest: "{{ chrony_conf_dir }}/chrony.conf"
+        owner: root
+        group: root
+        mode: '0644'
+      when: chrony_conf_file.stat.exists
+      notify: Redémarrer Chrony
+
+  handlers:
+    - name: Redémarrer Chrony
+      service:
+        name: chronyd
+        state: restarted
+
+![alt text](image-35.png)
+### Exécution :
+```bash
+ansible-playbook chrony-01.yml
+```
+
+## Playbook `chrony-02.yml`
+
+Le playbook `chrony-02.yml` doit utiliser une approche plus subtile en définissant des variables pour gérer les différences entre distributions.
+
+```yaml
+--- # chrony-02.yml
+- hosts: all
+  gather_facts: true  # Collecte des informations sur l'OS
+
+  vars:
+    chrony_package: chrony
+    chrony_service: chronyd
+    chrony_confdir: >-
+      {{ '/etc/chrony' if ansible_os_family in ['Debian', 'RedHat'] else '/etc/chrony.d' }}
+
+  tasks:
+    - name: Vérifier si ansible_os_family est défini
+      fail:
+        msg: "La variable ansible_os_family est indéfinie. Assurez-vous que gather_facts est activé."
+      when: ansible_os_family is not defined
+
+    - name: Installer Chrony (toutes distributions)
+      package:
+        name: "{{ chrony_package }}"
+        state: present
+
+    - name: Assurer l'existence du dossier de configuration Chrony
+      file:
+        path: "{{ chrony_confdir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copier la configuration Chrony (en dur dans le YAML)
+      copy:
+        dest: "{{ chrony_confdir }}/chrony.conf"
+        content: |
+          server 0.fr.pool.ntp.org iburst
+          server 1.fr.pool.ntp.org iburst
+          server 2.fr.pool.ntp.org iburst
+          server 3.fr.pool.ntp.org iburst
+
+          driftfile /var/lib/chrony/drift
+          makestep 1.0 3
+          rtcsync
+          logdir /var/log/chrony
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Redémarrer Chrony
+
+  handlers:
+    - name: Redémarrer Chrony
+      service:
+        name: "{{ chrony_service }}"
+        state: restarted
+        enabled: true
+```
+
+### Exécution :
+```bash
+ansible-playbook chrony-02.yml
+```
+![alt text](image-36.png)
+
+## 4. Quitter le Control Host
+```bash
+exit
+```
+
+## 5. Supprimer toutes les machines virtuelles
+```bash
+vagrant destroy -f
