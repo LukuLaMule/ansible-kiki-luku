@@ -1509,3 +1509,5 @@ exit
 exit
 vagrant destroy -f
 ```
+
+![alt text](image-39.png)
